@@ -1,63 +1,59 @@
 package ru.gb.oop.seminar03.game;
 
-import java.util.List;
-import java.util.Random;
-
 public abstract class AbstractGame implements Game {
-    abstract int generateCharList();
+    protected GameNumber secretNumber;
+    protected GameStatus status;
+    protected StringBuilder history;
 
-    private String word;
-    Integer tryCount;
-    GameStatus gameStatus = GameStatus.INIT;
-
-    @Override
-    public void start(Integer wordSize, Integer tryCount) {
-        word = RussianGame(wordSize);
-        this.tryCount = tryCount;
-        gameStatus = GameStatus.START;
+    public AbstractGame() {
+        this.secretNumber = generateSecretNumber();
+        this.status = GameStatus.IN_PROGRESS;
+        this.history = new StringBuilder();
     }
 
-
-
-    private String RussianGame(Integer wordSize) {
-        int alphabet = generateCharList();
-        Random rnd = new Random();
-        StringBuilder result = new StringBuilder(" ");
-        for (int i = 0; i < wordSize; i++) {
-            rnd.nextInt(alphabet);
-            result.append(alphabet);
-
-        }
-        return result.toString();
-    }
+    protected abstract GameNumber generateSecretNumber();
 
     @Override
-    public Answer inputValue(String value) {
-        if (!getGameStatus().equals(GameStatus.START)) {
-            throw new RuntimeException("Игра не запущена");
+    public void makeGuess(String guess) {
+        Answer answer = evaluateGuess(guess);
+        history.append(guess).append(" - Bulls: ").append(answer.getBulls()).append(", Cows: ").append(answer.getCows()).append("\n");
+
+        if (answer.getBulls() == secretNumber.getNumber().length()) {
+            status = GameStatus.WON;
+        } else if (history.length() / 5 >= 10) {
+            status = GameStatus.LOST;
         }
-        int cowCounter = 0;
-        int bullCounter = 0;
-        for (int i = 0; i < word.length(); i++) {
-            if (value.charAt(i) == word.charAt(i)) {
-                cowCounter++;
-                bullCounter++;
-            } else if (word.contains(String.valueOf(value.charAt(i)))) {
-                cowCounter++;
-            }
+    }
+
+    protected Answer evaluateGuess(String guess) {
+        if (guess.length() < 5) {
+            guess = String.format("%05d", Integer.parseInt(guess));
         }
-        tryCount--;
-        if (tryCount == 0){
-            gameStatus = GameStatus.LOOSE;
-        }
-        if (bullCounter == word.length()){
-            gameStatus = GameStatus.WIN;
-        }
-        return new Answer(cowCounter, bullCounter, tryCount);
+
+        int bulls = secretNumber.getBulls(guess);
+        int cows = secretNumber.getCows(guess);
+        return new Answer(bulls, cows);
     }
 
     @Override
-    public GameStatus getGameStatus() {
-        return gameStatus;
+    public GameStatus getStatus() {
+        return status;
+    }
+
+    @Override
+    public String getSecretNumber() {
+        return secretNumber.getNumber();
+    }
+
+    @Override
+    public String getHistory() {
+        return history.toString();
+    }
+
+    @Override
+    public void restart() {
+        secretNumber = generateSecretNumber();
+        status = GameStatus.IN_PROGRESS;
+        history = new StringBuilder();
     }
 }

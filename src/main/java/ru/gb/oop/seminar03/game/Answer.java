@@ -1,19 +1,19 @@
 package ru.gb.oop.seminar03.game;
 
 public class Answer {
-    private final int cowCounter;
-    private final int bullCounter;
-    private final Integer tryCount;
+    private int bulls;
+    private int cows;
 
-
-    @Override
-    public String toString() {
-        return cowCounter + " коровы " + bullCounter + " быков, осталось попыток : " + tryCount;
+    public Answer(int bulls, int cows) {
+        this.bulls = bulls;
+        this.cows = cows;
     }
 
-    public Answer(int cowCounter, int bullCounter, Integer tryCount) {
-        this.cowCounter = cowCounter;
-        this.bullCounter = bullCounter;
-        this.tryCount = tryCount;
+    public int getBulls() {
+        return bulls;
+    }
+
+    public int getCows() {
+        return cows;
     }
 }
